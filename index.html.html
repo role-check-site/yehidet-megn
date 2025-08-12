@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="he">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>מחשבון תאריכים - ימ"ר מגן</title>
+  <style>
+    :root{
+      --bg-1: #0b1d33;
+      --card-bg: #102b44;
+      --accent: #1e90ff;
+      --accent-light: #00bfff;
+      --text: #ffffff;
+      --muted: #b0c7e4;
+    }
+    *{box-sizing:border-box}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      margin: 0;
+      padding: 40px 16px;
+      background: var(--bg-1);
+      color: var(--text);
+    }
+    .container{max-width:680px;margin:0 auto}
+    .password-screen, .card{
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+      border: 2px solid var(--accent);
+    }
+    .password-screen{margin:60px auto 20px}
+    h2{
+      margin:0 0 8px 0;
+      font-size:22px;
+      color:var(--accent);
+      text-align:center;
+      letter-spacing:0.5px;
+    }
+    label{display:block;margin-top:12px;font-weight:600;color:var(--text)}
+    input[type="date"], input[type="number"], input[type="password"], select{
+      width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid var(--accent-light);background:#0b1d33;color:var(--text);font-size:15px
+    }
+    input:focus, select:focus{
+      outline:none;border-color:var(--accent-light);box-shadow:0 0 8px var(--accent-light);
+    }
+    .row{display:flex;gap:8px}
+    .row>*{flex:1}
+    button{padding:10px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;transition:background 0.3s}
+    button:hover{background:var(--accent-light)}
+    button.secondary{background:transparent;color:var(--accent-light);border:1px solid var(--accent-light)}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .result{margin-top:14px;padding:12px;border-radius:8px;background:#0b1d33;border:1px solid var(--accent-light);color:var(--text)}
+    .small{font-size:13px;color:var(--muted);margin-top:10px;text-align:center}
+    .hidden{display:none}
+    .password-row{display:flex;gap:8px;margin-top:10px}
+    .password-row input{flex:1}
+    footer{
+      margin-top:30px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+    }
+    @media (max-width:520px){body{padding:24px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="passwordScreen" class="password-screen">
+      <h2>כניסה למערכת</h2>
+      <div class="password-row">
+        <input type="password" id="passwordInput" placeholder="הכנס סיסמה">
+        <button id="loginBtn">כניסה</button>
+      </div>
+      <p class="small">גישה מורשית בלבד - יחידה מיוחדת "מגן"</p>
+    </div>
+
+    <div id="mainContent" class="card hidden">
+      <h2>מחשבון תאריכים — ימ"ר מגן</h2>
+      <label>תאריך התחלה</label>
+      <input id="start" type="date">
+
+      <label>הוספת ימים</label>
+      <div class="row">
+        <input id="days" type="number" value="7" min="0" step="1">
+      </div>
+
+      <div class="actions">
+        <button id="calc">חשב</button>
+        <button id="copy" class="secondary">העתק תוצאה</button>
+      </div>
+
+      <div id="out" class="result">כאן יופיע התאריך המחושב</div>
+      <p class="small">הזן תאריך התחלה ובחר מספר ימים להוספה.</p>
+    </div>
+
+    <footer>
+      © כל הזכויות שמורות • SA | Eviatar • simbaaa
+    </footer>
+  </div>
+
+<script>
+const passwordScreen = document.getElementById('passwordScreen');
+const mainContent = document.getElementById('mainContent');
+const passwordInput = document.getElementById('passwordInput');
+const loginBtn = document.getElementById('loginBtn');
+
+loginBtn.addEventListener('click', () => {
+  if (passwordInput.value === '930') {
+    passwordScreen.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+  } else {
+    alert('סיסמה שגויה');
+  }
+});
+
+const start = document.getElementById('start');
+const days = document.getElementById('days');
+const out = document.getElementById('out');
+const calc = document.getElementById('calc');
+const copyBtn = document.getElementById('copy');
+
+function formatDate(d){
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return dd + '/' + mm + '/' + yyyy;
+}
+
+function compute(){
+  if(!start.value){
+    out.textContent = 'בחר תאריך התחלה.';
+    return;
+  }
+  const s = new Date(start.value + 'T00:00:00');
+  let n = parseInt(days.value || '0', 10);
+  const result = new Date(s);
+  result.setDate(result.getDate() + n);
+  out.textContent = 'תאריך מחושב: ' + formatDate(result) + '  (ISO: ' + result.toISOString().slice(0,10) + ')';
+}
+
+calc.addEventListener('click', compute);
+
+copyBtn.addEventListener('click', () => {
+  const text = out.textContent || '';
+  if(!text) return;
+  navigator.clipboard?.writeText(text).then(() => {
+    copyBtn.textContent = 'הועתק!';
+    setTimeout(()=> copyBtn.textContent = 'העתק תוצאה', 1200);
+  }).catch(()=> {
+    alert('לא ניתן להעתיק — העתק ידנית מהתוצאה.');
+  });
+});
+
+[start, days].forEach(el => el.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') compute();
+}));
+
+const today = new Date();
+start.value = today.toISOString().slice(0,10);
+</script>
+</body>
+</html>
